@@ -1,9 +1,10 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const uploadRoutes = require("./routes/upload");
 const path = require("path");
 const fs = require("fs");
+const uploadRoutes = require("./routes/upload");
+const fileRoutes = require("./routes/files");
 
 const UPLOAD_FOLDER = process.env.UPLOAD_FOLDER || path.join(__dirname, "uploads");
 const TRANSCRIPT_FOLDER = process.env.TRANSCRIPT_FOLDER || path.join(__dirname, "transcriptions");
@@ -23,7 +24,8 @@ app.use(cors());
 app.use(express.json());
 
 // Routen
-app.use("/api", uploadRoutes);
+app.use("/api/v1/", uploadRoutes);
+app.use("/api/v1/", fileRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server läuft auf http://localhost:${PORT}`);
