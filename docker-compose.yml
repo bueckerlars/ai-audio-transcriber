@@ -14,16 +14,16 @@ services:
       - TRANSCRIPT_FOLDER=/app/data/transcriptions
     restart: always
 
-  # frontend:
-  #   build: ./frontend
-  #   container_name: ai-transcriber-frontend
-  #   ports:
-  #     - "3000:3000"
-  #   depends_on:
-  #     - backend
-  #   environment:
-  #     - REACT_APP_API_URL=http://localhost:5066
-  #   restart: always
+  frontend:
+    build: ./frontend
+    container_name: ai-transcriber-frontend
+    ports:
+      - "3000:3000" 
+    depends_on:
+      - backend
+    environment:
+      - REACT_APP_API_URL=http://localhost:5066
+    restart: always
 
 volumes: 
   backend_data:
