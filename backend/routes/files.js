@@ -19,6 +19,7 @@ router.get("/uploads", (req, res) => {
 // 🔹 Liste alle fertigen Transkriptionen
 router.get("/transcriptions", (req, res) => {
   fs.readdir(TRANSCRIPT_FOLDER, (err, files) => {
+    console.log("TranscriptFolder: " + TRANSCRIPT_FOLDER);
     if (err) return res.status(500).json({ error: "Fehler beim Abrufen der Transkripte" });
     res.json({ transcriptions: files });
   });

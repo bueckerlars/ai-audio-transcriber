@@ -1,11 +1,13 @@
 const { exec } = require("child_process");
 const path = require("path");
 
-const transcribeAudio = (filePath) => {
+const transcribeAudio = (filePath, outPath) => {
   return new Promise((resolve, reject) => {
-    const transcriptPath = `transcriptions/${path.basename(filePath)}.txt`;
-
-    exec(`python3 python-scripts/transcribe.py ${filePath} ${transcriptPath}`, (error, stdout, stderr) => {
+    const transcriptPath = `${outPath}/${path.basename(filePath)}.txt`;
+    console.log("Transcription started");
+    console.log("Filepath: " + transcriptPath);
+    
+    exec(`python3 python-scripts/transcribe.py --audio ${filePath} --output ${transcriptPath}`, (error, stdout, stderr) => {
       if (error) {
         console.error(`Fehler: ${stderr}`);
         reject(error);

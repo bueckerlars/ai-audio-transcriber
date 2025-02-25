@@ -25,5 +25,5 @@ services:
   #     - REACT_APP_API_URL=http://localhost:5066
   #   restart: always
 
-volumes:
+volumes: 
   backend_data:

@@ -5,9 +5,13 @@ const { transcribeAudio } = require("../services/transcribeService");
 
 const router = express.Router();
 
+// Lade die Umgebungsvariablen für Pfade
+const UPLOAD_FOLDER = process.env.UPLOAD_FOLDER || path.join(__dirname, "../uploads");
+const TRANSCRIPT_FOLDER = process.env.TRANSCRIPT_FOLDER || path.join(__dirname, "../transcriptions");
+
 // Speicherort für hochgeladene Dateien
 const storage = multer.diskStorage({
-  destination: "./uploads/",
+  destination: UPLOAD_FOLDER,
   filename: (req, file, cb) => {
     cb(null, Date.now() + path.extname(file.originalname));
   },
@@ -22,7 +26,7 @@ router.post("/upload", upload.single("audio"), async (req, res) => {
   }
 
   try {
-    const transcriptPath = await transcribeAudio(req.file.path);
+    const transcriptPath = await transcribeAudio(req.file.path, TRANSCRIPT_FOLDER);
     res.json({ message: "Transkription erfolgreich", transcriptPath });
   } catch (error) {
     res.status(500).json({ error: "Fehler bei der Transkription" });
