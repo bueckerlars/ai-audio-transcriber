@@ -29,7 +29,7 @@ The project is built using modern web technologies:
 #### **1. Clone the repository**
 ```bash
 git clone https://github.com/bueckerlars/ai-audio-transcriber.git
-cd ai-transcriber
+cd ai-audio-transcriber
 ```
 
 #### **2. Set up the Backend**
