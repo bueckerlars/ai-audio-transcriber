@@ -5,6 +5,7 @@ const path = require("path");
 const fs = require("fs");
 const uploadRoutes = require("./routes/upload");
 const fileRoutes = require("./routes/files");
+const authRoutes = require("./routes/auth");
 
 const UPLOAD_FOLDER = process.env.UPLOAD_FOLDER || path.join(__dirname, "uploads");
 const TRANSCRIPT_FOLDER = process.env.TRANSCRIPT_FOLDER || path.join(__dirname, "transcriptions");
@@ -17,7 +18,7 @@ console.log(`Uploads gespeichert in: ${UPLOAD_FOLDER}`);
 console.log(`Transkriptionen gespeichert in: ${TRANSCRIPT_FOLDER}`);
 
 const app = express();
-const PORT = process.env.PORT || 5066;
+const PORT = process.env.BACKEND_PORT || 5066;
 
 // Middleware
 app.use(cors());
@@ -26,6 +27,7 @@ app.use(express.json());
 // Routen
 app.use("/api/v1/", uploadRoutes);
 app.use("/api/v1/", fileRoutes);
+app.use("/api/v1/auth/", authRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server läuft auf http://localhost:${PORT}`);
