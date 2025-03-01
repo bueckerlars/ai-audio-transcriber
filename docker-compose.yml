@@ -12,6 +12,7 @@ services:
       - PORT=5066
       - UPLOAD_FOLDER=/app/data/uploads
       - TRANSCRIPT_FOLDER=/app/data/transcriptions
+      - DB_FOLDER=/app/data/db
     restart: always
 
   frontend:

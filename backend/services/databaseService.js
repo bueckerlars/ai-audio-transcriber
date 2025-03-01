@@ -5,13 +5,14 @@ const path = require('path');
 class DatabaseService {
     constructor() {
         this.dbType = process.env.DB_TYPE || 'sqlite'; // Default is SQLite
+        console.log('Using database:', this.dbType);  
         this.connection = null;
         this.init();
     }
 
     init() {
         if (this.dbType === 'sqlite') {
-            const dbPath = path.join(__dirname, '..', 'data', 'database.sqlite');
+            const dbPath = path.join(process.env.DB_FOLDER, "/database.sqlite") || path.join(__dirname, '../data/database.sqlite');
             this.connection = new sqlite3.Database(dbPath, (err) => {
                 if (err) {
                     console.error('Error connecting to SQLite database:', err);
