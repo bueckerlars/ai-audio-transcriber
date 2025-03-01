@@ -3,9 +3,13 @@ const express = require("express");
 const cors = require("cors");
 const path = require("path");
 const fs = require("fs");
-const uploadRoutes = require("./routes/upload");
+const transcribeRoutes = require("./routes/transcribe");
 const fileRoutes = require("./routes/files");
 const authRoutes = require("./routes/auth");
+const DatabaseService = require("./services/databaseService");
+const LoggerService = require('./services/loggerService');
+
+const logger = new LoggerService('SERVER');
 
 const UPLOAD_FOLDER = process.env.UPLOAD_FOLDER || path.join(__dirname, "uploads");
 const TRANSCRIPT_FOLDER = process.env.TRANSCRIPT_FOLDER || path.join(__dirname, "transcriptions");
@@ -14,21 +18,24 @@ const TRANSCRIPT_FOLDER = process.env.TRANSCRIPT_FOLDER || path.join(__dirname, 
 if (!fs.existsSync(UPLOAD_FOLDER)) fs.mkdirSync(UPLOAD_FOLDER, { recursive: true });
 if (!fs.existsSync(TRANSCRIPT_FOLDER)) fs.mkdirSync(TRANSCRIPT_FOLDER, { recursive: true });
 
-console.log(`Uploads gespeichert in: ${UPLOAD_FOLDER}`);
-console.log(`Transkriptionen gespeichert in: ${TRANSCRIPT_FOLDER}`);
+logger.debug(`Upload storage location: ${UPLOAD_FOLDER}`);
+logger.debug(`Transcriptionen storage location: ${TRANSCRIPT_FOLDER}`);
+
+// Initialisiere Datenbank-Service
+DatabaseService.initialize();
 
 const app = express();
-const PORT = process.env.BACKEND_PORT || 5066;
+const BACKEND_PORT = process.env.BACKEND_PORT || 5066;
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 
 // Routen
-app.use("/api/v1/", uploadRoutes);
-app.use("/api/v1/", fileRoutes);
-app.use("/api/v1/auth/", authRoutes);
+app.use("/api/v1", transcribeRoutes);
+app.use("/api/v1/files", fileRoutes);
+app.use("/api/v1/auth", authRoutes)
 
-app.listen(PORT, () => {
-  console.log(`Server läuft auf http://localhost:${PORT}`);
+app.listen(BACKEND_PORT, () => {
+  logger.info(`Server is running on http://localhost:${BACKEND_PORT}`);
 });

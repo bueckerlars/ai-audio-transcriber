@@ -22,8 +22,8 @@ RUN pip install --no-cache-dir torch transformers argparse accelerate coremltool
 # Lade das Hugging Face Modell vorab herunter, um Verzögerungen zu vermeiden
 RUN python -c "from transformers import pipeline; pipeline('automatic-speech-recognition', model='primeline/whisper-tiny-german-1224')"
 
-# Exponiere Port 5000 für das Backend
-EXPOSE 5000
+# Exponiere Port 5066 für das Backend
+EXPOSE 5066
 
 # Starte die Node.js Anwendung
 CMD ["npm", "start"]

@@ -27,29 +27,30 @@ const authenticateToken = (req, res, next) => {
 router.post('/register', async (req, res) => {
     try {
         const { username, email, password } = req.body;
+        const User = db.getModel('User');
 
-        // Check if user already exists
-        const existingUser = await db.query(
-            'SELECT * FROM users WHERE email = ?',
-            [email]
-        );
+        // Prüfen ob Benutzer bereits existiert
+        const existingUser = await User.findOne({
+            where: { email }
+        });
 
-        if (existingUser.length > 0) {
+        if (existingUser) {
             return res.status(400).json({ error: 'Email already registered' });
         }
 
-        // Hash password
+        // Passwort hashen
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Save user to database
-        const result = await db.execute(
-            'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
-            [username, email, hashedPassword]
-        );
+        // Benutzer in Datenbank speichern
+        const user = await User.create({
+            username,
+            email,
+            password: hashedPassword
+        });
 
         res.status(201).json({ 
             message: 'User successfully created',
-            userId: result.lastID 
+            userId: user.id 
         });
     } catch (error) {
         console.error('Registration error:', error);
@@ -57,30 +58,27 @@ router.post('/register', async (req, res) => {
     }
 });
 
-// Login
 router.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
+        const User = db.getModel('User');
 
-        // Find user in database
-        const users = await db.query(
-            'SELECT * FROM users WHERE email = ?',
-            [email]
-        );
+        // Benutzer in Datenbank finden
+        const user = await User.findOne({
+            where: { email }
+        });
 
-        if (users.length === 0) {
+        if (!user) {
             return res.status(401).json({ error: 'Invalid credentials' });
         }
 
-        const user = users[0];
-
-        // Verify password
+        // Passwort überprüfen
         const validPassword = await bcrypt.compare(password, user.password);
         if (!validPassword) {
             return res.status(401).json({ error: 'Invalid credentials' });
         }
 
-        // Create JWT token
+        // JWT Token erstellen
         const token = jwt.sign(
             { userId: user.id, email: user.email },
             process.env.JWT_SECRET,
@@ -104,16 +102,17 @@ router.post('/login', async (req, res) => {
 // Get user info (protected route)
 router.get('/me', authenticateToken, async (req, res) => {
     try {
-        const users = await db.query(
-            'SELECT id, username, email FROM users WHERE id = ?',
-            [req.user.userId]
-        );
+        const User = db.getModel('User');
+        const user = await User.findOne({
+            where: { id: req.user.userId },
+            attributes: ['id', 'username', 'email']
+        });
 
-        if (users.length === 0) {
+        if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        res.json(users[0]);
+        res.json(user);
     } catch (error) {
         console.error('Error getting user info:', error);
         res.status(500).json({ error: 'Internal server error' });
@@ -124,31 +123,26 @@ router.get('/me', authenticateToken, async (req, res) => {
 router.post('/change-password', authenticateToken, async (req, res) => {
     try {
         const { currentPassword, newPassword } = req.body;
+        const User = db.getModel('User');
 
-        // Get current user
-        const users = await db.query(
-            'SELECT * FROM users WHERE id = ?',
-            [req.user.userId]
-        );
+        // Aktuellen Benutzer finden
+        const user = await User.findOne({
+            where: { id: req.user.userId }
+        });
 
-        if (users.length === 0) {
+        if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        const user = users[0];
-
-        // Verify current password
+        // Aktuelles Passwort überprüfen
         const validPassword = await bcrypt.compare(currentPassword, user.password);
         if (!validPassword) {
             return res.status(401).json({ error: 'Current password is incorrect' });
         }
 
-        // Hash and save new password
+        // Neues Passwort hashen und speichern
         const hashedPassword = await bcrypt.hash(newPassword, 10);
-        await db.execute(
-            'UPDATE users SET password = ? WHERE id = ?',
-            [hashedPassword, req.user.userId]
-        );
+        await user.update({ password: hashedPassword });
 
         res.json({ message: 'Password successfully changed' });
     } catch (error) {

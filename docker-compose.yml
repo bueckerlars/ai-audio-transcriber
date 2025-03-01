@@ -9,22 +9,43 @@ services:
     volumes:
       - backend_data:/app/data
     environment:
-      - PORT=5066
+      - BACKEND_PORT=${BACKEND_PORT}
       - UPLOAD_FOLDER=/app/data/uploads
       - TRANSCRIPT_FOLDER=/app/data/transcriptions
-      - DB_FOLDER=/app/data/db
+      - SQLITE_PATH=/app/data/db
+      # Postgres Verbindungsdaten
+      - POSTGRES_HOST=${DB_HOST}
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    depends_on:
+      - postgres
     restart: always
 
   frontend:
     build: ./frontend
     container_name: ai-transcriber-frontend
     ports:
-      - "3000:3000" 
+      - "${FRONTEND_PORT}:3000"
     depends_on:
       - backend
     environment:
       - REACT_APP_API_URL=http://localhost:5066
     restart: always
 
+  postgres:
+    image: postgres:15
+    container_name: ai-transcriber-postgres
+    ports:
+      - "${DB_PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    restart: always
+
 volumes: 
   backend_data:
+  postgres_data:
