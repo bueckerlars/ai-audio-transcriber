@@ -1,3 +1,4 @@
+import TranscriptionListTable from "~/components/transcriptionList/transcription-list-table";
 import type { Route } from "./+types/home";
 import FileListTable from "~/components/fileList/file-list-table";
 
@@ -10,5 +11,10 @@ export function meta({}: Route.MetaArgs) {
 
 export default function Home() {
   // return <Welcome />;
-  return <FileListTable />;
+  return (
+    <>
+      <FileListTable />;
+      {/* <TranscriptionListTable />; */}
+    </>
+  )
 }

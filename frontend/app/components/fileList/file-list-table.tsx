@@ -1,20 +1,19 @@
+import { useEffect, useState } from 'react';
 import { DataTable } from "../ui/data-table";
 import { fileListColumns, type FileListItem } from "./file-list-columns";
+import { getFiles } from '~/api';
 
-const FileListTable = async () => {
-    const data = await getData();
-    
-    async function getData(): Promise<FileListItem[]> {
-        // Fetch data from your API here.
-        return [
-          {
-            id: "1",
-            filename: "string",
-            size: 5,
-          },
-          // ...
-        ]
-    }
+const FileListTable = () => {
+    const [data, setData] = useState<FileListItem[]>([]);
+
+    useEffect(() => {
+        async function fetchData() {
+            const response = getFiles();
+            const data = (await response).data.files;
+            setData(data);
+        }
+        fetchData();
+    }, []);
 
     return (
         <div className="container mx-auto py-10">

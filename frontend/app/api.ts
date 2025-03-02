@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5066',
+  baseURL: 'http://localhost:5066/api/v1',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -44,7 +44,7 @@ export const uploadFile = (file: File, type: string) => {
 };
 
 export const getFiles = (type?: string) => {
-  return api.get('/files', {
+  return api.get('/files/files', {
     params: { type },
   });
 };
