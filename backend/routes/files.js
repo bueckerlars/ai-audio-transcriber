@@ -15,12 +15,14 @@ const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadDir = process.env.UPLOAD_FOLDER || path.join(__dirname, "../uploads");
     if (!fs.existsSync(uploadDir)) {
+      logger.debug(`Creating upload directory: ${uploadDir}`);
       fs.mkdirSync(uploadDir, { recursive: true });
     }
     cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
     const uniqueFilename = `${uuidv4()}${path.extname(file.originalname)}`;
+    logger.debug("Unigue filename:", uniqueFilename);
     cb(null, uniqueFilename);
   }
 });
@@ -50,7 +52,7 @@ const upload = multer({ storage });
  *       500:
  *         description: Error processing file upload
  */
-router.post("/upload", upload.single("file"), async (req, res) => {
+router.post("/upload", upload.single("audio"), async (req, res) => {
   try {
     logger.info('Processing file upload request');
     if (!req.file) {
@@ -93,6 +95,7 @@ router.post("/upload", upload.single("file"), async (req, res) => {
  */
 router.get("/files", async (req, res) => {
   try {
+    logger.info('Fetching files');
     const type = req.query.type;
     const where = type ? { type } : {};
     
@@ -103,7 +106,7 @@ router.get("/files", async (req, res) => {
     
     res.json({ files });
   } catch (error) {
-    console.error("Fehler beim Abrufen der Dateien:", error);
+    logger.error("Fehler beim Abrufen der Dateien:", error);
     res.status(500).json({ error: "Fehler beim Abrufen der Dateien" });
   }
 });
@@ -144,7 +147,7 @@ router.get("/files/:id", async (req, res) => {
 
     res.sendFile(file.path);
   } catch (error) {
-    console.error("Fehler beim Abrufen der Datei:", error);
+    logger.error("Fehler beim Abrufen der Datei:", error);
     res.status(500).json({ error: "Fehler beim Abrufen der Datei" });
   }
 });
@@ -189,7 +192,7 @@ router.delete("/files/:id", async (req, res) => {
 
     res.json({ message: "Datei erfolgreich gelöscht" });
   } catch (error) {
-    console.error("Fehler beim Löschen der Datei:", error);
+    logger.error("Fehler beim Löschen der Datei:", error);
     res.status(500).json({ error: "Fehler beim Löschen der Datei" });
   }
 });
