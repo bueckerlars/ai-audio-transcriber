@@ -4,6 +4,7 @@ const fs = require("fs");
 const { transcribeAudio } = require("../services/transcribeService");
 const databaseService = require("../services/databaseService");
 const LoggerService = require('../services/loggerService');
+const { update } = require("../models/User");
 
 const router = express.Router();
 
@@ -46,10 +47,11 @@ router.post("/transcribe/:fileId", async (req, res) => {
     // Create a transcription job in database
     const transcriptionJob = await databaseService.insert('TranscriptionJob', {
       audio_file_id: req.params.fileId,
-      status: 'pending',
+      updated_at: new Date(),
+      status: 'running',
       created_at: new Date()
     });
-    logger.info("File: " + file);
+
     // Start transcription asynchronously
     transcribeAudio(file.path, TRANSCRIPT_FOLDER)
       .then(async (transcriptPath) => {
@@ -70,6 +72,7 @@ router.post("/transcribe/:fileId", async (req, res) => {
         await databaseService.update('TranscriptionJob', {
           status: 'completed',
           transcript_file_id: transcriptFile.id,
+          updated_at: new Date(),
           completed_at: new Date()
         }, { id: transcriptionJob.id });
       })
@@ -91,6 +94,32 @@ router.post("/transcribe/:fileId", async (req, res) => {
   } catch (error) {
     logger.error('Error starting transcription:', error);
     res.status(500).json({ error: "Error starting transcription" });
+  }
+});
+
+/**
+ * @swagger
+ * /transcribe/list:
+ *   get:
+ *     summary: Fetch all transcription jobs
+ *     responses:
+ *       200:
+ *         description: List of transcription jobs
+ *       500:
+ *         description: Error fetching transcription jobs
+ */
+router.get("/transcribe/list", async (req, res) => {
+  try {
+    logger.info('Fetching transcription jobs');
+    
+    const jobs = await databaseService.findAll('TranscriptionJob', {
+      attributes: ['id', 'status', 'created_at', 'completed_at', 'updated_at', 'completed_at', 'transcript_file_id', 'audio_file_id', 'error'],
+    });
+
+    res.json({ jobs });
+  } catch (error) {
+    logger.error("Error fetching transcription jobs:", error);
+    res.status(500).json({ error: "Error fetching transcription jobs" });
   }
 });
 
