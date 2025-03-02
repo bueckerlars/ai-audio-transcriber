@@ -35,7 +35,7 @@ export const changePassword = (token: string, data: { currentPassword: string; n
 // Files endpoints
 export const uploadFile = (file: File, type: string) => {
   const formData = new FormData();
-  formData.append('file', file);
+  formData.append('audio', file);
   return api.post(`/files/upload?type=${type}`, formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
