@@ -38,25 +38,29 @@ router.post("/transcribe/:fileId", async (req, res) => {
     logger.info('Starting new transcription job');
     // Get file information from database
     const file = await databaseService.findOne('File', {
-          where: { id: req.params.fileId }
+      where: { id: req.params.fileId }
     });
     if (!file) {
       return res.status(404).json({ error: "File not found" });
     }
 
-    // Create a transcription job in database
+    // Check if there is a running job
+    const runningJob = await databaseService.findOne('TranscriptionJob', {
+      where: { status: 'running' }
+    });
+
+    // Create a transcription job in database with status 'pending' if a job is already running
     const transcriptionJob = await databaseService.insert('TranscriptionJob', {
       audio_file_id: req.params.fileId,
       updated_at: new Date(),
-      status: 'running',
+      status: runningJob ? 'pending' : 'running',
       created_at: new Date()
     });
 
-    // Start transcription asynchronously
-    transcribeAudio(file.path, TRANSCRIPT_FOLDER)
-      .then(async (transcriptPath) => {
-        // Update job status and save path
-
+    // Function to process the transcription job
+    const processJob = async (job) => {
+      try {
+        const transcriptPath = await transcribeAudio(file.path, TRANSCRIPT_FOLDER);
         const transcriptStats = fs.statSync(transcriptPath);
         logger.debug("Transcript: " + transcriptStats);
 
@@ -74,16 +78,30 @@ router.post("/transcribe/:fileId", async (req, res) => {
           transcript_file_id: transcriptFile.id,
           updated_at: new Date(),
           completed_at: new Date()
-        }, { id: transcriptionJob.id });
-      })
-      .catch(async (error) => {
-        // Update job status on error
+        }, { id: job.id });
+
+        // Process next pending job
+        const nextJob = await databaseService.findOne('TranscriptionJob', {
+          where: { status: 'pending' },
+          order: [['created_at', 'ASC']]
+        });
+        if (nextJob) {
+          await databaseService.update('TranscriptionJob', { status: 'running' }, { id: nextJob.id });
+          processJob(nextJob);
+        }
+      } catch (error) {
         await databaseService.update('TranscriptionJob', {
           status: 'failed',
           error: error.message,
           completed_at: new Date()
-        }, { id: transcriptionJob.id });
-      });
+        }, { id: job.id });
+      }
+    };
+
+    // Start processing the job if no job is currently running
+    if (!runningJob) {
+      processJob(transcriptionJob);
+    }
 
     // Return job ID immediately
     res.json({ 
