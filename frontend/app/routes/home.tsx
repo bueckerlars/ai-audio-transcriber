@@ -1,5 +1,4 @@
 import type { Route } from "./+types/home";
-import { Welcome } from "../welcome/welcome";
 import FileListTable from "~/components/fileList/file-list-table";
 
 export function meta({}: Route.MetaArgs) {
