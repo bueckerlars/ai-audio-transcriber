@@ -8,6 +8,8 @@ const fileRoutes = require("./routes/files");
 const authRoutes = require("./routes/auth");
 const DatabaseService = require("./services/databaseService");
 const LoggerService = require('./services/loggerService');
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./swaggerConfig');
 
 const logger = new LoggerService('SERVER');
 
@@ -30,6 +32,10 @@ const BACKEND_PORT = process.env.BACKEND_PORT || 5066;
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// SwaggerUI setup
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+logger.debug(`Swagger UI initialized at http://localhost:${BACKEND_PORT}/api-docs`);
 
 // Routen
 app.use("/api/v1", transcribeRoutes);

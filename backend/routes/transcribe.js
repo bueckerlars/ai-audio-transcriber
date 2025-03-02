@@ -3,8 +3,9 @@ const path = require("path");
 const { transcribeAudio } = require("../services/transcribeService");
 const { 
   getFileById, 
-  createTranscriptionJob, 
-  updateTranscriptionStatus 
+  insert, 
+  update, 
+  findOne 
 } = require("../services/databaseService");
 const LoggerService = require('../services/loggerService');
 
@@ -15,6 +16,26 @@ const TRANSCRIPT_FOLDER = process.env.TRANSCRIPT_FOLDER || path.join(__dirname, 
 const logger = new LoggerService('TRANSCRIBE');
 
 // Start transcription for an existing file
+/**
+ * @swagger
+ * /transcribe/{fileId}:
+ *   post:
+ *     summary: Start transcription for an existing file
+ *     parameters:
+ *       - in: path
+ *         name: fileId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the file to transcribe
+ *     responses:
+ *       200:
+ *         description: Transcription started
+ *       404:
+ *         description: File not found
+ *       500:
+ *         description: Error starting transcription
+ */
 router.post("/transcribe/:fileId", async (req, res) => {
   try {
     logger.info('Starting new transcription job');
@@ -26,8 +47,8 @@ router.post("/transcribe/:fileId", async (req, res) => {
     }
 
     // Create a transcription job in database
-    const transcriptionJob = await createTranscriptionJob({
-      fileId: file.id,
+    const transcriptionJob = await insert('TranscriptionJob', {
+      transcript_file_id: file.id,
       status: 'pending',
       created_at: new Date()
     });
@@ -36,19 +57,19 @@ router.post("/transcribe/:fileId", async (req, res) => {
     transcribeAudio(file.path, TRANSCRIPT_FOLDER)
       .then(async (transcriptPath) => {
         // Update job status and save path
-        await updateTranscriptionStatus(transcriptionJob.id, {
+        await update('TranscriptionJob', {
           status: 'completed',
-          transcript_path: transcriptPath,
+          transcript_file_id: file.id,
           completed_at: new Date()
-        });
+        }, { id: transcriptionJob.id });
       })
       .catch(async (error) => {
         // Update job status on error
-        await updateTranscriptionStatus(transcriptionJob.id, {
+        await update('TranscriptionJob', {
           status: 'failed',
           error: error.message,
           completed_at: new Date()
-        });
+        }, { id: transcriptionJob.id });
       });
 
     // Return job ID immediately
@@ -64,9 +85,32 @@ router.post("/transcribe/:fileId", async (req, res) => {
 });
 
 // Query transcription status
+/**
+ * @swagger
+ * /transcribe/status/{jobId}:
+ *   get:
+ *     summary: Query transcription status
+ *     parameters:
+ *       - in: path
+ *         name: jobId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the transcription job
+ *     responses:
+ *       200:
+ *         description: Transcription job status
+ *       404:
+ *         description: Transcription job not found
+ *       500:
+ *         description: Error fetching job status
+ */
 router.get("/transcribe/status/:jobId", async (req, res) => {
   try {
-    const job = await getTranscriptionJob(req.params.jobId);
+    const job = await findOne('TranscriptionJob', {
+      where: { id: req.params.jobId },
+      include: [{ model: getModel('File'), as: 'transcriptFile' }]
+    });
     
     if (!job) {
       return res.status(404).json({ error: "Transcription job not found" });

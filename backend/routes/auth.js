@@ -23,7 +23,32 @@ const authenticateToken = (req, res, next) => {
     });
 };
 
-// Registration
+/**
+ * @swagger
+ * /auth/register:
+ *   post:
+ *     summary: Register a new user
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: User successfully created
+ *       400:
+ *         description: Email already registered
+ *       500:
+ *         description: Internal server error
+ */
 router.post('/register', async (req, res) => {
     try {
         const { username, email, password } = req.body;
@@ -58,6 +83,30 @@ router.post('/register', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /auth/login:
+ *   post:
+ *     summary: Login a user
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: User logged in successfully
+ *       401:
+ *         description: Invalid credentials
+ *       500:
+ *         description: Internal server error
+ */
 router.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -99,7 +148,21 @@ router.post('/login', async (req, res) => {
     }
 });
 
-// Get user info (protected route)
+/**
+ * @swagger
+ * /auth/me:
+ *   get:
+ *     summary: Get user info
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User info retrieved successfully
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
 router.get('/me', authenticateToken, async (req, res) => {
     try {
         const User = db.getModel('User');
@@ -119,7 +182,34 @@ router.get('/me', authenticateToken, async (req, res) => {
     }
 });
 
-// Change password (protected route)
+/**
+ * @swagger
+ * /auth/change-password:
+ *   post:
+ *     summary: Change user password
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               currentPassword:
+ *                 type: string
+ *               newPassword:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Password successfully changed
+ *       401:
+ *         description: Current password is incorrect
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
 router.post('/change-password', authenticateToken, async (req, res) => {
     try {
         const { currentPassword, newPassword } = req.body;

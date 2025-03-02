@@ -27,7 +27,29 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// 🔹 Datei hochladen
+/**
+ * @swagger
+ * /files/upload:
+ *   post:
+ *     summary: Upload a file
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       201:
+ *         description: File uploaded successfully
+ *       400:
+ *         description: No file uploaded
+ *       500:
+ *         description: Error processing file upload
+ */
 router.post("/upload", upload.single("file"), async (req, res) => {
   try {
     logger.info('Processing file upload request');
@@ -52,7 +74,23 @@ router.post("/upload", upload.single("file"), async (req, res) => {
   }
 });
 
-// 🔹 Liste aller Dateien eines bestimmten Typs
+/**
+ * @swagger
+ * /files:
+ *   get:
+ *     summary: List all files of a specific type
+ *     parameters:
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *         description: The type of files to list
+ *     responses:
+ *       200:
+ *         description: List of files
+ *       500:
+ *         description: Error fetching files
+ */
 router.get("/files", async (req, res) => {
   try {
     const type = req.query.type;
@@ -70,7 +108,26 @@ router.get("/files", async (req, res) => {
   }
 });
 
-// 🔹 Einzelne Datei abrufen
+/**
+ * @swagger
+ * /files/{id}:
+ *   get:
+ *     summary: Retrieve a single file
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the file to retrieve
+ *     responses:
+ *       200:
+ *         description: File retrieved successfully
+ *       404:
+ *         description: File not found
+ *       500:
+ *         description: Error fetching file
+ */
 router.get("/files/:id", async (req, res) => {
   try {
     const file = await databaseService.findOne('File', {
@@ -92,7 +149,26 @@ router.get("/files/:id", async (req, res) => {
   }
 });
 
-// 🔹 Datei löschen
+/**
+ * @swagger
+ * /files/{id}:
+ *   delete:
+ *     summary: Delete a file
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the file to delete
+ *     responses:
+ *       200:
+ *         description: File deleted successfully
+ *       404:
+ *         description: File not found
+ *       500:
+ *         description: Error deleting file
+ */
 router.delete("/files/:id", async (req, res) => {
   try {
     const file = await databaseService.findOne('File', {

@@ -2,6 +2,7 @@ const { Sequelize, Model, DataTypes, QueryTypes } = require('sequelize');
 const fs = require("fs");
 const LoggerService = require('./loggerService');
 require('dotenv').config();
+const TranscriptionJob = require('../models/TranscriptionJob');
 
 class DatabaseService {
     constructor() {
@@ -62,8 +63,12 @@ class DatabaseService {
         // Modelle initialisieren
         this.models = {
             User: require('../models/User').init(this.sequelize),
-            File: require('../models/File').init(this.sequelize)
+            File: require('../models/File').init(this.sequelize),
+            TranscriptionJob: TranscriptionJob.init(this.sequelize)
         };
+
+        // Define associations
+        this.models.TranscriptionJob.belongsTo(this.models.File, { foreignKey: 'transcript_file_id' });
 
         try {
             await this.sequelize.authenticate();
@@ -224,49 +229,6 @@ class DatabaseService {
     // Hilfsmethode zum Zugriff auf Models
     getModel(modelName) {
         return this.models[modelName];
-    }
-
-    /**
-     * Erstellt einen neuen Transkriptions-Job
-     */
-    async createTranscriptionJob(jobData) {
-        const [job] = await this.sequelize.query('INSERT INTO transcription_jobs (status, created_at) VALUES (:status, :created_at) RETURNING *', {
-            replacements: {
-                status: jobData.status,
-                created_at: jobData.created_at
-            },
-            type: QueryTypes.INSERT
-        });
-        return job;
-    }
-
-    /**
-     * Aktualisiert den Status eines Transkriptions-Jobs
-     */
-    async updateTranscriptionStatus(jobId, updateData) {
-        const [updated] = await this.sequelize.query('UPDATE transcription_jobs SET status = :status, updated_at = :updated_at, completed_at = :completed_at, transcript_path = :transcript_path, error = :error WHERE id = :id RETURNING *', {
-            replacements: {
-                status: updateData.status,
-                updated_at: new Date(),
-                completed_at: updateData.completed_at,
-                transcript_path: updateData.transcript_path,
-                error: updateData.error,
-                id: jobId
-            },
-            type: QueryTypes.UPDATE
-        });
-        return updated;
-    }
-
-    /**
-     * Holt einen Transkriptions-Job anhand seiner ID
-     */
-    async getTranscriptionJob(jobId) {
-        const job = await this.sequelize.query('SELECT * FROM transcription_jobs WHERE id = :id', {
-            replacements: { id: jobId },
-            type: QueryTypes.SELECT
-        });
-        return job[0][0];
     }
 }
 
