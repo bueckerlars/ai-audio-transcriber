@@ -78,7 +78,7 @@ router.post("/upload", upload.single("audio"), async (req, res) => {
 
 /**
  * @swagger
- * /files:
+ * /files/list:
  *   get:
  *     summary: List all files of a specific type
  *     parameters:
@@ -93,7 +93,7 @@ router.post("/upload", upload.single("audio"), async (req, res) => {
  *       500:
  *         description: Error fetching files
  */
-router.get("/files", async (req, res) => {
+router.get("/list", async (req, res) => {
   try {
     logger.info('Fetching files');
     const type = req.query.type;
@@ -131,7 +131,7 @@ router.get("/files", async (req, res) => {
  *       500:
  *         description: Error fetching file
  */
-router.get("/files/:id", async (req, res) => {
+router.get("/:id", async (req, res) => {
   try {
     const file = await databaseService.findOne('File', {
       where: { id: req.params.id }
@@ -172,7 +172,7 @@ router.get("/files/:id", async (req, res) => {
  *       500:
  *         description: Error deleting file
  */
-router.delete("/files/:id", async (req, res) => {
+router.delete("/:id", async (req, res) => {
   try {
     const file = await databaseService.findOne('File', {
       where: { id: req.params.id }

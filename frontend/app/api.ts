@@ -44,7 +44,7 @@ export const uploadFile = (file: File, type: string) => {
 };
 
 export const getFiles = (type?: string) => {
-  return api.get('/files/files', {
+  return api.get('/files/list', {
     params: { type },
   });
 };
