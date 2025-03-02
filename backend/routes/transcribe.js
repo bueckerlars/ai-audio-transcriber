@@ -1,12 +1,8 @@
 const express = require("express");
 const path = require("path");
+const fs = require("fs");
 const { transcribeAudio } = require("../services/transcribeService");
-const { 
-  getFileById, 
-  insert, 
-  update, 
-  findOne 
-} = require("../services/databaseService");
+const databaseService = require("../services/databaseService");
 const LoggerService = require('../services/loggerService');
 
 const router = express.Router();
@@ -40,32 +36,46 @@ router.post("/transcribe/:fileId", async (req, res) => {
   try {
     logger.info('Starting new transcription job');
     // Get file information from database
-    const file = await getFileById(req.params.fileId);
-    
+    const file = await databaseService.findOne('File', {
+          where: { id: req.params.fileId }
+    });
     if (!file) {
       return res.status(404).json({ error: "File not found" });
     }
 
     // Create a transcription job in database
-    const transcriptionJob = await insert('TranscriptionJob', {
-      transcript_file_id: file.id,
+    const transcriptionJob = await databaseService.insert('TranscriptionJob', {
+      audio_file_id: req.params.fileId,
       status: 'pending',
       created_at: new Date()
     });
-
+    logger.info("File: " + file);
     // Start transcription asynchronously
     transcribeAudio(file.path, TRANSCRIPT_FOLDER)
       .then(async (transcriptPath) => {
         // Update job status and save path
-        await update('TranscriptionJob', {
+
+        const transcriptStats = fs.statSync(transcriptPath);
+        logger.debug("Transcript: " + transcriptStats);
+
+        const transcriptFile = await databaseService.insert('File', {
+          filename: path.basename(transcriptPath),
+          originalName: path.basename(transcriptPath),
+          type: 'transcript',
+          path: transcriptPath,
+          size: transcriptStats.size,
+          mimeType: 'text/plain',
+        });
+
+        await databaseService.update('TranscriptionJob', {
           status: 'completed',
-          transcript_file_id: file.id,
+          transcript_file_id: transcriptFile.id,
           completed_at: new Date()
         }, { id: transcriptionJob.id });
       })
       .catch(async (error) => {
         // Update job status on error
-        await update('TranscriptionJob', {
+        await databaseService.update('TranscriptionJob', {
           status: 'failed',
           error: error.message,
           completed_at: new Date()
@@ -107,18 +117,19 @@ router.post("/transcribe/:fileId", async (req, res) => {
  */
 router.get("/transcribe/status/:jobId", async (req, res) => {
   try {
-    const job = await findOne('TranscriptionJob', {
+    const job = await databaseService.findOne('TranscriptionJob', {
       where: { id: req.params.jobId },
-      include: [{ model: getModel('File'), as: 'transcriptFile' }]
     });
     
     if (!job) {
+      logger.error('Transcription job not found: ' + req.params.jobId);
       return res.status(404).json({ error: "Transcription job not found" });
     }
-
+    logger.debug("Job: " + job);
     res.json(job);
   } catch (error) {
-    res.status(500).json({ error: "Error fetching job status" });
+    logger.error('Error fetching job status:' + error);
+    res.status(500).json({ error: "Error fetching job status + " + error });
   }
 });
 

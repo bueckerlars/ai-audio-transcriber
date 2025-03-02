@@ -29,6 +29,13 @@ class TranscriptionJob {
           key: 'id' // Key in the target model
         }
       },
+      audio_file_id: {
+        type: DataTypes.UUID,
+        references: {
+          model: 'Files', // Name of the target model
+          key: 'id' // Key in the target model
+        }
+      },
       error: {
         type: DataTypes.STRING
       }

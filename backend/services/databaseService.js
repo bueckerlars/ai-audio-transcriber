@@ -2,7 +2,6 @@ const { Sequelize, Model, DataTypes, QueryTypes } = require('sequelize');
 const fs = require("fs");
 const LoggerService = require('./loggerService');
 require('dotenv').config();
-const TranscriptionJob = require('../models/TranscriptionJob');
 
 class DatabaseService {
     constructor() {
@@ -64,11 +63,12 @@ class DatabaseService {
         this.models = {
             User: require('../models/User').init(this.sequelize),
             File: require('../models/File').init(this.sequelize),
-            TranscriptionJob: TranscriptionJob.init(this.sequelize)
+            TranscriptionJob: require('../models/TranscriptionJob').init(this.sequelize),
         };
 
         // Define associations
         this.models.TranscriptionJob.belongsTo(this.models.File, { foreignKey: 'transcript_file_id' });
+        this.models.TranscriptionJob.belongsTo(this.models.File, { foreignKey: 'audio_file_id' });
 
         try {
             await this.sequelize.authenticate();
@@ -129,7 +129,7 @@ class DatabaseService {
             const model = this.sequelize.model(tableName);
             return await model.bulkCreate(dataArray);
         } catch (error) {
-            console.error(`Error bulk inserting into ${tableName}:`, error);
+            this.logger.error(`Error bulk inserting into ${tableName}:`, error);
             throw error;
         }
     }
@@ -139,7 +139,7 @@ class DatabaseService {
             const model = this.sequelize.model(tableName);
             return await model.findAll(options);
         } catch (error) {
-            console.error(`Error querying ${tableName}:`, error);
+            this.logger.error(`Error querying ${tableName}:`, error);
             throw error;
         }
     }
@@ -149,7 +149,7 @@ class DatabaseService {
             const model = this.sequelize.model(tableName);
             return await model.findOne(options);
         } catch (error) {
-            console.error(`Error querying ${tableName}:`, error);
+            this.logger.error(`Error querying ${tableName}:`, error);
             throw error;
         }
     }

@@ -58,8 +58,8 @@ export const deleteFile = (id: string) => {
 };
 
 // Transcribe endpoints
-export const startTranscription = (fileId: string) => {
-  return api.post(`/transcribe/${fileId}`);
+export const startTranscription = (audio_file_id: string) => {
+  return api.post(`/transcribe/${audio_file_id}`);
 };
 
 export const getTranscriptionStatus = (jobId: string) => {
