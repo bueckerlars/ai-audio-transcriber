@@ -61,7 +61,7 @@ const UploadBox: React.FC = () => {
                     ))}
                 </ul>
             </div>
-            <Button onClick={handleTranscribe} style={{ width: 'auto' }}>
+            <Button onClick={handleTranscribe} style={{ width: 'auto' }} disabled={uploadedFiles.length === 0}>
                 Transcribe Files
             </Button>
         </Card>
