@@ -40,6 +40,9 @@ const UploadBox: React.FC = () => {
                     console.error('Error starting transcription:', error);
                 });
         });
+        setUploadedFiles([]);
+        setResponses([]);
+        setUploadStatus({});
     };
 
     const { getRootProps, getInputProps } = useDropzone({ onDrop });
