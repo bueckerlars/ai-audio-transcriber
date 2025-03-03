@@ -16,7 +16,10 @@ export default function Home() {
   return (
     <>
       {/* <FileUploadDialog /> */}
-      <UploadBox />
+      <div className="container mx-auto pt-10">
+
+        <UploadBox />
+      </div>
       {/* <FileListTable />; */}
       <TranscriptionListTable />
     </>

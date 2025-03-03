@@ -25,7 +25,8 @@ export const transcriptionListColumns: ColumnDef<TranscriptionListItem>[] = [
     {
         id: "select",
         header: ({ table }) => (
-            <input
+            <input 
+                className="ml-2"
                 type="checkbox"
                 checked={table.getIsAllPageRowsSelected()}
                 onChange={table.getToggleAllPageRowsSelectedHandler()}
@@ -33,6 +34,7 @@ export const transcriptionListColumns: ColumnDef<TranscriptionListItem>[] = [
         ),
         cell: ({ row }) => (
             <input
+                className="ml-2"
                 type="checkbox"
                 checked={row.getIsSelected()}
                 onChange={row.getToggleSelectedHandler()}
