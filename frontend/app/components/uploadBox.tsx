@@ -1,6 +1,5 @@
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import axios from 'axios';
 import { Button } from './ui/button';
 import { startTranscription, uploadFile } from '~/api';
 import { Card } from './ui/card';
@@ -46,8 +45,8 @@ const UploadBox: React.FC = () => {
     const { getRootProps, getInputProps } = useDropzone({ onDrop });
 
     return (
-        <Card style={{ padding: '20px', margin: '40px', justifyContent: 'center', alignItems: 'center', display: 'flex', flexDirection: 'column' }}>
-            <div {...getRootProps()} style={{ border: '2px dashed #cccccc', padding: '20px', textAlign: 'center', width: '100%' }}>
+        <Card style={{ padding: '20px', margin: '15px 80px', justifyContent: 'center', alignItems: 'center', display: 'flex', flexDirection: 'column' }}>
+            <div {...getRootProps()} style={{ border: '2px dashed #cccccc', padding: '50px', textAlign: 'center', width: '100%' }}>
                 <input {...getInputProps()} />
                 <p>Drag & drop files here, or click to select files</p>
                 <p style={{ color: '#888888' }}>Files will be uploaded immediately</p>

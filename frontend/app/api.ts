@@ -49,6 +49,10 @@ export const getFiles = (type?: string) => {
   });
 };
 
+export const getFileInfoById = (id: string) => {
+  return api.get(`/files/info/${id}`);
+};
+
 export const getFileById = (id: string) => {
   return api.get(`/files/${id}`);
 };
@@ -62,6 +66,14 @@ export const startTranscription = (audio_file_id: string) => {
   return api.post(`/transcribe/${audio_file_id}`);
 };
 
+export const getTranscriptionList = () => {
+  return api.get('/transcribe/list');
+};
+
 export const getTranscriptionStatus = (jobId: string) => {
   return api.get(`/transcribe/status/${jobId}`);
+};
+
+export const deleteTranscription = (jobId: string) => {
+  return api.delete(`/transcribe/${jobId}`);
 };

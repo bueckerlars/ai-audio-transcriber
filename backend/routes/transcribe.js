@@ -180,4 +180,79 @@ router.get("/transcribe/status/:jobId", async (req, res) => {
   }
 });
 
+
+/**
+ * @swagger
+ * /transcribe/{jobId}:
+ *   delete:
+ *     summary: Delete a transcription job
+ *     parameters:
+ *       - in: path
+ *         name: jobId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the transcription job to delete
+ *     responses:
+ *       200:
+ *         description: Job deleted
+ *       404:
+ *         description: Transcription job not found
+ *       500:
+ *         description: Error deleting job
+ */
+router.delete("/transcribe/:jobId", async (req, res) => {
+  try {
+    const job = await databaseService.findOne('TranscriptionJob', {
+      where: { id: req.params.jobId },
+    });
+      
+    if (!job) {
+      logger.error('Transcription job not found: ' + req.params.jobId);
+      return res.status(404).json({ error: "Transcription job not found" });
+    }
+    else {
+      logger.debug('Job: ' + job);
+      // delete job entry
+      await databaseService.delete("TranscriptionJob", { id: req.params.jobId });
+      logger.debug('Deleted job: ' + req.params.jobId);
+    }
+
+    // delete audio file
+    const audio_file_id = job.audio_file_id;
+    logger.debug('Audio file id: ' + audio_file_id);
+    const audioFile = await databaseService.findOne('File', {
+      where: { id: audio_file_id }
+    });
+    if (audioFile) {
+      fs.unlinkSync(audioFile.path);
+      await databaseService.delete('File', { id: audio_file_id });
+      logger.debug('Deleted audio file: ' + audioFile.path); 
+    }
+    else {
+      logger.error('Audio file not found: ' + audio_file_id);
+    }
+
+    // delete transcript file
+    const transcript_file_id = job.transcript_file_id;
+    logger.debug('Transcript file id: ' + transcript_file_id);
+    const transcriptFile = await databaseService.findOne('File', {
+      where: { id: transcript_file_id}
+    });
+    if (transcriptFile) {
+      fs.unlinkSync(transcriptFile.path);
+      await databaseService.delete('File', { id: transcript_file_id });
+      logger.debug('Deleted transcript file: ' + transcriptFile.path); 
+    }
+    else {
+      logger.error('Transcript file not found: ' + transcript_file_id);
+    }
+
+    res.status(200).json({ message: "Job deleted" });
+  } catch (error) {
+    logger.error('Error deleting job:' + error);
+    res.status(500).json({ error: "Error deleting job" });
+  }
+});
+
 module.exports = router;

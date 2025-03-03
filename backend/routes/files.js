@@ -197,4 +197,82 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /files/download/{id}:
+ *   get:
+ *     summary: Download a file
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the file to download
+ *     responses:
+ *       200:
+ *         description: File downloaded successfully
+ *       404:
+ *         description: File not found
+ *       500:
+ *         description: Error downloading file
+ */
+router.get("/download/:id", async (req, res) => {
+  try {
+    const file = await databaseService.findOne('File', {
+      where: { id: req.params.id }
+    });
+
+    if (!file) {
+      return res.status(404).json({ error: "Datei nicht gefunden" });
+    }
+
+    if (!fs.existsSync(file.path)) {
+      return res.status(404).json({ error: "Datei nicht auf dem Server gefunden" });
+    }
+
+    res.download(file.path, file.originalName);
+  } catch (error) {
+    logger.error("Fehler beim Herunterladen der Datei:", error);
+    res.status(500).json({ error: "Fehler beim Herunterladen der Datei" });
+  }
+});
+
+/**
+ * @swagger
+ * /files/info/{id}:
+ *   get:
+ *     summary: Get information of a specific file
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the file to get information
+ *     responses:
+ *       200:
+ *         description: File information retrieved successfully
+ *       404:
+ *         description: File not found
+ *       500:
+ *         description: Error fetching file information
+ */
+router.get("/info/:id", async (req, res) => {
+  try {
+    const file = await databaseService.findOne('File', {
+      where: { id: req.params.id }
+    });
+
+    if (!file) {
+      return res.status(404).json({ error: "Datei nicht gefunden" });
+    }
+
+    res.json(file);
+  } catch (error) {
+    logger.error("Fehler beim Abrufen der Datei-Informationen:", error);
+    res.status(500).json({ error: "Fehler beim Abrufen der Datei-Informationen" });
+  }
+});
+
 module.exports = router;
