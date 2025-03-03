@@ -128,7 +128,7 @@ router.post("/transcribe/:fileId", async (req, res) => {
  */
 router.get("/transcribe/list", async (req, res) => {
   try {
-    logger.info('Fetching transcription jobs');
+    logger.debug('Fetching transcription jobs');
     
     const jobs = await databaseService.findAll('TranscriptionJob', {
       attributes: ['id', 'status', 'created_at', 'completed_at', 'updated_at', 'completed_at', 'transcript_file_id', 'audio_file_id', 'error'],
@@ -210,8 +210,7 @@ router.delete("/transcribe/:jobId", async (req, res) => {
     if (!job) {
       logger.error('Transcription job not found: ' + req.params.jobId);
       return res.status(404).json({ error: "Transcription job not found" });
-    }
-    else {
+    } else {
       logger.debug('Job: ' + job);
       // delete job entry
       await databaseService.delete("TranscriptionJob", { id: req.params.jobId });
@@ -228,8 +227,7 @@ router.delete("/transcribe/:jobId", async (req, res) => {
       fs.unlinkSync(audioFile.path);
       await databaseService.delete('File', { id: audio_file_id });
       logger.debug('Deleted audio file: ' + audioFile.path); 
-    }
-    else {
+    } else {
       logger.error('Audio file not found: ' + audio_file_id);
     }
 
@@ -237,15 +235,26 @@ router.delete("/transcribe/:jobId", async (req, res) => {
     const transcript_file_id = job.transcript_file_id;
     logger.debug('Transcript file id: ' + transcript_file_id);
     const transcriptFile = await databaseService.findOne('File', {
-      where: { id: transcript_file_id}
+      where: { id: transcript_file_id }
     });
     if (transcriptFile) {
       fs.unlinkSync(transcriptFile.path);
       await databaseService.delete('File', { id: transcript_file_id });
       logger.debug('Deleted transcript file: ' + transcriptFile.path); 
-    }
-    else {
+    } else {
       logger.error('Transcript file not found: ' + transcript_file_id);
+    }
+
+    // If the deleted job was running, start the next pending job
+    if (job.status === 'running') {
+      const nextJob = await databaseService.findOne('TranscriptionJob', {
+        where: { status: 'pending' },
+        order: [['created_at', 'ASC']]
+      });
+      if (nextJob) {
+        await databaseService.update('TranscriptionJob', { status: 'running' }, { id: nextJob.id });
+        processJob(nextJob);
+      }
     }
 
     res.status(200).json({ message: "Job deleted" });
