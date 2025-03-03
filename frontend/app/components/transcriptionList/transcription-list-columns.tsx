@@ -3,10 +3,11 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { deleteFile, deleteTranscription, getFileById, getFileInfoById } from "~/api";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "~/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from "~/components/ui/dropdown-menu";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
-import { ArrowUpDown } from "lucide-react";
+import { ArrowUpDown, MoreHorizontal } from "lucide-react";
+import { DropdownMenuLabel } from "@radix-ui/react-dropdown-menu";
 
 export type TranscriptionListItem = {
     id: string,
@@ -122,21 +123,25 @@ export const transcriptionListColumns: ColumnDef<TranscriptionListItem>[] = [
     },
     {
         id: "actions",
-        header: "Actions",
         cell: ({ row }) => {
             const { transcript_file_id, audio_file_id, id, title } = row.original;
             return (
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="secondary">Actions</Button>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Open menu</span>
+                            <MoreHorizontal className="h-4 w-4" />
+                        </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
                         <DropdownMenuItem onClick={handleTranscriptDownload.bind(null, transcript_file_id, title)}>
                             Download Transcript
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={handleAudioDownload.bind(null, audio_file_id, title)}>
                             Download Audio
                         </DropdownMenuItem>
+                        <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={onDeletedClicked.bind(null, id)}>
                             Delete
                         </DropdownMenuItem>
