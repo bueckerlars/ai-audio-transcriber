@@ -4,13 +4,12 @@ const fs = require("fs");
 const { transcribeAudio } = require("../services/transcribeService");
 const databaseService = require("../services/databaseService");
 const LoggerService = require('../services/loggerService');
-const { update } = require("../models/User");
 
 const router = express.Router();
 
 // Load environment variables for paths
 const TRANSCRIPT_FOLDER = process.env.TRANSCRIPT_FOLDER || path.join(__dirname, "../transcriptions");
-const logger = new LoggerService('TRANSCRIBE');
+const logger = new LoggerService('API');
 
 // Start transcription for an existing file
 /**

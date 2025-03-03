@@ -1,10 +1,12 @@
-import type { ColumnDef } from "@tanstack/react-table"
-import { deleteFile, deleteTranscription, getFileById, getFileInfoById } from "~/api"
-import { Badge } from "~/components/ui/badge"
-import { Button } from "~/components/ui/button"
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "~/components/ui/dropdown-menu"
-import { format } from "date-fns"
-import { de } from "date-fns/locale"
+import { useState } from "react";
+import type { ColumnDef } from "@tanstack/react-table";
+import { deleteFile, deleteTranscription, getFileById, getFileInfoById } from "~/api";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "~/components/ui/dropdown-menu";
+import { format } from "date-fns";
+import { de } from "date-fns/locale";
+import { ArrowUpDown } from "lucide-react";
 
 export type TranscriptionListItem = {
     id: string,
@@ -16,16 +18,49 @@ export type TranscriptionListItem = {
     audio_file_id: string,
     transcript_file_id: string,
     error: string,
-}
+};
 
 export const transcriptionListColumns: ColumnDef<TranscriptionListItem>[] = [
     {
+        id: "select",
+        header: ({ table }) => (
+            <input
+                type="checkbox"
+                checked={table.getIsAllPageRowsSelected()}
+                onChange={table.getToggleAllPageRowsSelectedHandler()}
+            />
+        ),
+        cell: ({ row }) => (
+            <input
+                type="checkbox"
+                checked={row.getIsSelected()}
+                onChange={row.getToggleSelectedHandler()}
+            />
+        ),
+    },
+    {
         accessorKey: "title",
-        header: "Title",
+        header: ({ column }) => {
+            return (
+                <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() == "asc")}>
+                    Title
+                    <ArrowUpDown />
+                </Button>
+            )
+        },
+        enableSorting: true,
     },
     {
         accessorKey: "status",
-        header: "Status",
+        header: ({ column }) => {
+            return (
+                <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() == "asc")}>
+                    Status
+                    <ArrowUpDown />
+                </Button>
+            )
+        },
+        enableSorting: true,
         cell: ({ row }) => {
             const status = row.original.status;
             const formattedStatus = status.charAt(0).toUpperCase() + status.slice(1);
@@ -48,17 +83,41 @@ export const transcriptionListColumns: ColumnDef<TranscriptionListItem>[] = [
     },
     {
         accessorKey: "created_at",
-        header: "Created At",
+        header: ({ column }) => {
+            return (
+                <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() == "asc")}>
+                    Created At
+                    <ArrowUpDown />
+                </Button>
+            )
+        },
+        enableSorting: true,
         cell: ({ row }) => format(new Date(row.original.created_at), "Pp", { locale: de }),
     },
     {
         accessorKey: "updated_at",
-        header: "Updated At",
+        header: ({ column }) => {
+            return (
+                <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() == "asc")}>
+                    Updated At
+                    <ArrowUpDown />
+                </Button>
+            )
+        },
+        enableSorting: true,
         cell: ({ row }) => format(new Date(row.original.updated_at), "Pp", { locale: de }),
     },
     {
         accessorKey: "completed_at",
-        header: "Completed At",
+        header: ({ column }) => {
+            return (
+                <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() == "asc")}>
+                    Completed At
+                    <ArrowUpDown />
+                </Button>
+            )
+        },
+        enableSorting: true,
         cell: ({ row }) => format(new Date(row.original.completed_at), "Pp", { locale: de }),
     },
     {
@@ -86,7 +145,7 @@ export const transcriptionListColumns: ColumnDef<TranscriptionListItem>[] = [
             );
         },
     },
-]
+];
 
 const handleAudioDownload = async (fileId: string, title: string) => {
     console.log("Downloading file with ID:", fileId);
@@ -102,7 +161,7 @@ const handleAudioDownload = async (fileId: string, title: string) => {
     } catch (error) {
         console.error("Error downloading file:", error);
     }
-}
+};
 
 const handleTranscriptDownload = async (fileId: string, title: string) => {
     console.log("Downloading file with ID:", fileId);
@@ -118,10 +177,10 @@ const handleTranscriptDownload = async (fileId: string, title: string) => {
     } catch (error) {
         console.error("Error downloading file:", error);
     }
-}
+};
 
 const onDeletedClicked = (id: string) => {
     // TODO: Implement delete transcript functionality
     console.log("Deleting transcript with ID:", id);
     deleteTranscription(id);
-}
+};
