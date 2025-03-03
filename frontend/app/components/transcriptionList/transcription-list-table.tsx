@@ -32,7 +32,7 @@ const TranscriptionListTable = () => {
 
     return (
         <div className="container mx-auto py-10">
-            <DataTable columns={transcriptionListColumns} data={data} />
+            <DataTable columns={transcriptionListColumns} data={data} onSelectionChange={(value) => {console.log(value)}}/>
         </div>
     )
 }
