@@ -18,7 +18,7 @@ export default function Home() {
       {/* <FileUploadDialog /> */}
       <UploadBox />
       {/* <FileListTable />; */}
-      <TranscriptionListTable />;
+      <TranscriptionListTable />
     </>
   )
 }
