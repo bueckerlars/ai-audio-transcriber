@@ -1,7 +1,5 @@
 import TranscriptionListTable from "~/components/transcriptionList/transcription-list-table";
 import type { Route } from "./+types/home";
-import FileListTable from "~/components/fileList/file-list-table";
-// import FileUploadDialog from "~/components/fileUploadDialog";
 import UploadBox from "~/components/uploadBox";
 
 export function meta({}: Route.MetaArgs) {
@@ -15,12 +13,7 @@ export default function Home() {
   // return <Welcome />;
   return (
     <>
-      {/* <FileUploadDialog /> */}
-      <div className="container mx-auto pt-10">
-
-        <UploadBox />
-      </div>
-      {/* <FileListTable />; */}
+      <UploadBox />
       <TranscriptionListTable />
     </>
   )

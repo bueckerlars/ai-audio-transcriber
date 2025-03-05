@@ -48,7 +48,7 @@ const UploadBox: React.FC = () => {
     const { getRootProps, getInputProps } = useDropzone({ onDrop });
 
     return (
-        <Card style={{ padding: '20px', alignSelf: "center", justifyContent: 'center', alignItems: 'center', display: 'flex', flexDirection: 'column' }}>
+        <Card className="container mx-auto pt-10" style={{ padding: '20px', alignSelf: "center", justifyContent: 'center', alignItems: 'center', display: 'flex', flexDirection: 'column' }}>
             <div {...getRootProps()} style={{ border: '2px dashed #cccccc', padding: '50px', textAlign: 'center', width: '100%' }}>
                 <input {...getInputProps()} />
                 <p>Drag & drop files here, or click to select files</p>
