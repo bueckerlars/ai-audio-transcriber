@@ -1,6 +1,7 @@
 import TranscriptionListTable from "~/components/transcriptionList/transcription-list-table";
 import type { Route } from "./+types/home";
 import UploadBox from "~/components/uploadBox";
+import AccountMenuButton from "~/components/account-menu-button";
 
 export function meta({}: Route.MetaArgs) {
   return [
