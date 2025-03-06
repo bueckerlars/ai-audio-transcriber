@@ -8,6 +8,13 @@ class TranscriptionJob {
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true
       },
+      userId: {
+        type: DataTypes.INTEGER,
+        references: {
+          model: "User",
+          key: "id",
+        }
+      },
       status: {
         type: DataTypes.STRING,
         allowNull: false

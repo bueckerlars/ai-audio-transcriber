@@ -64,6 +64,7 @@ router.post("/upload", authenticateToken, upload.single("audio"), async (req, re
 
     const fileData = {
       filename: req.file.filename,
+      userId: req.file.userId,
       originalName: req.file.originalname,
       type: req.query.type || 'upload',
       path: req.file.path,
@@ -101,18 +102,22 @@ router.post("/upload", authenticateToken, upload.single("audio"), async (req, re
 router.get("/list", authenticateToken, async (req, res) => {
   try {
     logger.info('Fetching files');
+    const userId = req.query.userId;
+    if (!userId) {
+      res.status(500).json({ error: "UserId is required"})
+    }
+
     const type = req.query.type;
-    const where = type ? { type } : {};
     
     const files = await databaseService.findAll('File', {
-      where,
+      where: { userId: userId, type: type ? { type } : {} },
       attributes: ['id', 'filename', 'originalName', 'type', 'size', 'mimeType', 'createdAt']
     });
     
     res.json({ files });
   } catch (error) {
-    logger.error("Fehler beim Abrufen der Dateien:", error);
-    res.status(500).json({ error: "Fehler beim Abrufen der Dateien" });
+    logger.error("Failed to fetch files:", error);
+    res.status(500).json({ error: "Failed to fetch files" });
   }
 });
 
@@ -141,21 +146,21 @@ router.get("/list", authenticateToken, async (req, res) => {
 router.get("/:id", authenticateToken, async (req, res) => {
   try {
     const file = await databaseService.findOne('File', {
-      where: { id: req.params.id }
+      where: { id: req.params.id, userId: req.params.userId }
     });
 
     if (!file) {
-      return res.status(404).json({ error: "Datei nicht gefunden" });
+      return res.status(404).json({ error: "Could not find file" });
     }
 
     if (!fs.existsSync(file.path)) {
-      return res.status(404).json({ error: "Datei nicht auf dem Server gefunden" });
+      return res.status(404).json({ error: "File does not exists" });
     }
 
     res.sendFile(file.path);
   } catch (error) {
-    logger.error("Fehler beim Abrufen der Datei:", error);
-    res.status(500).json({ error: "Fehler beim Abrufen der Datei" });
+    logger.error("Failed to fetch file:", error);
+    res.status(500).json({ error: "Failed to fetch file" });
   }
 });
 
@@ -184,11 +189,11 @@ router.get("/:id", authenticateToken, async (req, res) => {
 router.delete("/:id", authenticateToken, async (req, res) => {
   try {
     const file = await databaseService.findOne('File', {
-      where: { id: req.params.id }
+      where: { id: req.params.id, userId: req.params.userId }
     });
 
     if (!file) {
-      return res.status(404).json({ error: "Datei nicht gefunden" });
+      return res.status(404).json({ error: "Could not find file" });
     }
 
     // Datei physisch löschen
@@ -199,10 +204,10 @@ router.delete("/:id", authenticateToken, async (req, res) => {
     // Datenbankeinträg löschen
     await databaseService.delete('File', { id: req.params.id });
 
-    res.json({ message: "Datei erfolgreich gelöscht" });
+    res.json({ message: "Successfully delete file" });
   } catch (error) {
-    logger.error("Fehler beim Löschen der Datei:", error);
-    res.status(500).json({ error: "Fehler beim Löschen der Datei" });
+    logger.error("Failed to delete file:", error);
+    res.status(500).json({ error: "Failed to delete file" });
   }
 });
 
@@ -231,17 +236,17 @@ router.delete("/:id", authenticateToken, async (req, res) => {
 router.get("/info/:id", authenticateToken, async (req, res) => {
   try {
     const file = await databaseService.findOne('File', {
-      where: { id: req.params.id }
+      where: { id: req.params.id, userId: req.params.userId }
     });
 
     if (!file) {
-      return res.status(404).json({ error: "Datei nicht gefunden" });
+      return res.status(404).json({ error: "Could not find file" });
     }
 
     res.json(file);
   } catch (error) {
-    logger.error("Fehler beim Abrufen der Datei-Informationen:", error);
-    res.status(500).json({ error: "Fehler beim Abrufen der Datei-Informationen" });
+    logger.error("Failed to fetch file info:", error);
+    res.status(500).json({ error: "Failed to fetch file info" });
   }
 });
 

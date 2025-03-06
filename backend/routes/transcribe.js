@@ -25,6 +25,16 @@ const logger = new LoggerService('API');
  *         schema:
  *           type: string
  *         description: The ID of the file to transcribe
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userId:
+ *                 type: string
+ *                 description: The ID of the user
  *     responses:
  *       200:
  *         description: Transcription started
@@ -36,22 +46,26 @@ const logger = new LoggerService('API');
 router.post("/transcribe/:fileId", authenticateToken, async (req, res) => {
   try {
     logger.info('Starting new transcription job');
+    const { userId } = req.body;
+    const { fileId } = req.params;
+
     // Get file information from database
     const file = await databaseService.findOne('File', {
-      where: { id: req.params.fileId }
+      where: { id: fileId, userId: userId }
     });
     if (!file) {
-      return res.status(404).json({ error: "File not found" });
+      return res.status(404).json({ error: "File not found or unauthorized" });
     }
 
     // Check if there is a running job
     const runningJob = await databaseService.findOne('TranscriptionJob', {
-      where: { status: 'running' }
+      where: { status: 'running', userId: userId }
     });
 
     // Create a transcription job in database with status 'pending' if a job is already running
     const transcriptionJob = await databaseService.insert('TranscriptionJob', {
-      audio_file_id: req.params.fileId,
+      userId: userId,
+      audio_file_id: fileId,
       updated_at: new Date(),
       status: runningJob ? 'pending' : 'running',
       created_at: new Date()
@@ -65,6 +79,7 @@ router.post("/transcribe/:fileId", authenticateToken, async (req, res) => {
         logger.debug("Transcript: " + transcriptStats);
 
         const transcriptFile = await databaseService.insert('File', {
+          userId: userId,
           filename: path.basename(transcriptPath),
           originalName: path.basename(transcriptPath),
           type: 'transcript',
@@ -122,6 +137,16 @@ router.post("/transcribe/:fileId", authenticateToken, async (req, res) => {
  *     summary: Fetch all transcription jobs
  *     security:
  *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userId:
+ *                 type: string
+ *                 description: The ID of the user
  *     responses:
  *       200:
  *         description: List of transcription jobs
@@ -131,8 +156,10 @@ router.post("/transcribe/:fileId", authenticateToken, async (req, res) => {
 router.get("/transcribe/list", authenticateToken, async (req, res) => {
   try {
     logger.debug('Fetching transcription jobs');
-    
+    const { userId } = req.body;
+
     const jobs = await databaseService.findAll('TranscriptionJob', {
+      where: { userId: userId },
       attributes: ['id', 'status', 'created_at', 'completed_at', 'updated_at', 'completed_at', 'transcript_file_id', 'audio_file_id', 'error'],
     });
 
@@ -156,6 +183,16 @@ router.get("/transcribe/list", authenticateToken, async (req, res) => {
  *         schema:
  *           type: string
  *         description: The ID of the transcription job
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userId:
+ *                 type: string
+ *                 description: The ID of the user
  *     responses:
  *       200:
  *         description: Transcription job status
@@ -166,13 +203,15 @@ router.get("/transcribe/list", authenticateToken, async (req, res) => {
  */
 router.get("/transcribe/status/:jobId", authenticateToken, async (req, res) => {
   try {
+    const { userId } = req.body;
+    const { jobId } = req.params;
     const job = await databaseService.findOne('TranscriptionJob', {
-      where: { id: req.params.jobId },
+      where: { id: jobId, userId: userId },
     });
     
     if (!job) {
-      logger.error('Transcription job not found: ' + req.params.jobId);
-      return res.status(404).json({ error: "Transcription job not found" });
+      logger.error('Transcription job not found: ' + jobId);
+      return res.status(404).json({ error: "Transcription job not found or unauthorized" });
     }
     logger.debug("Job: " + job);
     res.json(job);
@@ -195,6 +234,16 @@ router.get("/transcribe/status/:jobId", authenticateToken, async (req, res) => {
  *         schema:
  *           type: string
  *         description: The ID of the transcription job to delete
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userId:
+ *                 type: string
+ *                 description: The ID of the user
  *     responses:
  *       200:
  *         description: Job deleted
@@ -205,25 +254,27 @@ router.get("/transcribe/status/:jobId", authenticateToken, async (req, res) => {
  */
 router.delete("/transcribe/:jobId", authenticateToken, async (req, res) => {
   try {
+    const { userId } = req.body;
+    const { jobId } = req.params;
     const job = await databaseService.findOne('TranscriptionJob', {
-      where: { id: req.params.jobId },
+      where: { id: jobId, userId: userId },
     });
       
     if (!job) {
-      logger.error('Transcription job not found: ' + req.params.jobId);
-      return res.status(404).json({ error: "Transcription job not found" });
+      logger.error('Transcription job not found: ' + jobId);
+      return res.status(404).json({ error: "Transcription job not found or unauthorized" });
     } else {
       logger.debug('Job: ' + job);
       // delete job entry
-      await databaseService.delete("TranscriptionJob", { id: req.params.jobId });
-      logger.debug('Deleted job: ' + req.params.jobId);
+      await databaseService.delete("TranscriptionJob", { id: jobId });
+      logger.debug('Deleted job: ' + jobId);
     }
 
     // delete audio file
     const audio_file_id = job.audio_file_id;
     logger.debug('Audio file id: ' + audio_file_id);
     const audioFile = await databaseService.findOne('File', {
-      where: { id: audio_file_id }
+      where: { id: audio_file_id, userId: userId }
     });
     if (audioFile) {
       fs.unlinkSync(audioFile.path);
@@ -237,7 +288,7 @@ router.delete("/transcribe/:jobId", authenticateToken, async (req, res) => {
     const transcript_file_id = job.transcript_file_id;
     logger.debug('Transcript file id: ' + transcript_file_id);
     const transcriptFile = await databaseService.findOne('File', {
-      where: { id: transcript_file_id }
+      where: { id: transcript_file_id, userId: userId }
     });
     if (transcriptFile) {
       fs.unlinkSync(transcriptFile.path);

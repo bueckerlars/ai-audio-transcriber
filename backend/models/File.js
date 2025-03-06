@@ -8,6 +8,13 @@ class File {
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true
       },
+      userId: {
+        type: DataTypes.INTEGER,
+        references: {
+          model: "User",
+          key: "id",
+        }
+      },
       filename: {
         type: DataTypes.STRING,
         allowNull: false
