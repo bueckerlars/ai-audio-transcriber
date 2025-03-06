@@ -64,6 +64,7 @@ class DatabaseService {
             User: require('../models/User').init(this.sequelize),
             File: require('../models/File').init(this.sequelize),
             TranscriptionJob: require('../models/TranscriptionJob').init(this.sequelize),
+            Blacklist: require('../models/blacklist')(this.sequelize, Sequelize.DataTypes),
         };
 
         // Define associations

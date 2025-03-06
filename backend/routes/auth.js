@@ -2,26 +2,10 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require('../services/databaseService');
+const blacklist = require('../services/tokenBlacklistService'); // Import the token blacklist service
+const { authenticateToken } = require('../middleware/authMiddleware'); // Import the authentication middleware
 
 const router = express.Router();
-
-// Middleware for protected routes
-const authenticateToken = (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-
-    if (!token) {
-        return res.status(401).json({ error: 'No token found' });
-    }
-
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-        if (err) {
-            return res.status(403).json({ error: 'Invalid token' });
-        }
-        req.user = user;
-        next();
-    });
-};
 
 /**
  * @swagger
@@ -237,6 +221,34 @@ router.post('/change-password', authenticateToken, async (req, res) => {
         res.json({ message: 'Password successfully changed' });
     } catch (error) {
         console.error('Error changing password:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+/**
+ * @swagger
+ * /auth/logout:
+ *   post:
+ *     summary: Logout a user
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User logged out successfully
+ *       500:
+ *         description: Internal server error
+ */
+router.post('/logout', authenticateToken, async (req, res) => {
+    try {
+        const authHeader = req.headers['authorization'];
+        const token = authHeader && authHeader.split(' ')[1];
+
+        // Add the token to the blacklist
+        await blacklist.add(token);
+
+        res.json({ message: 'User logged out successfully' });
+    } catch (error) {
+        console.error('Logout error:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });

@@ -4,6 +4,7 @@ const fs = require("fs");
 const { transcribeAudio } = require("../services/transcribeService");
 const databaseService = require("../services/databaseService");
 const LoggerService = require('../services/loggerService');
+const { authenticateToken } = require('../middleware/authMiddleware'); // Import the authentication middleware
 
 const router = express.Router();
 
@@ -32,7 +33,7 @@ const logger = new LoggerService('API');
  *       500:
  *         description: Error starting transcription
  */
-router.post("/transcribe/:fileId", async (req, res) => {
+router.post("/transcribe/:fileId", authenticateToken, async (req, res) => {
   try {
     logger.info('Starting new transcription job');
     // Get file information from database
@@ -119,13 +120,15 @@ router.post("/transcribe/:fileId", async (req, res) => {
  * /transcribe/list:
  *   get:
  *     summary: Fetch all transcription jobs
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: List of transcription jobs
  *       500:
  *         description: Error fetching transcription jobs
  */
-router.get("/transcribe/list", async (req, res) => {
+router.get("/transcribe/list", authenticateToken, async (req, res) => {
   try {
     logger.debug('Fetching transcription jobs');
     
@@ -161,7 +164,7 @@ router.get("/transcribe/list", async (req, res) => {
  *       500:
  *         description: Error fetching job status
  */
-router.get("/transcribe/status/:jobId", async (req, res) => {
+router.get("/transcribe/status/:jobId", authenticateToken, async (req, res) => {
   try {
     const job = await databaseService.findOne('TranscriptionJob', {
       where: { id: req.params.jobId },
@@ -200,7 +203,7 @@ router.get("/transcribe/status/:jobId", async (req, res) => {
  *       500:
  *         description: Error deleting job
  */
-router.delete("/transcribe/:jobId", async (req, res) => {
+router.delete("/transcribe/:jobId", authenticateToken, async (req, res) => {
   try {
     const job = await databaseService.findOne('TranscriptionJob', {
       where: { id: req.params.jobId },

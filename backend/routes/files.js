@@ -5,6 +5,7 @@ const multer = require("multer");
 const { v4: uuidv4 } = require('uuid');
 const databaseService = require("../services/databaseService");
 const LoggerService = require('../services/loggerService');
+const { authenticateToken } = require('../middleware/authMiddleware'); // Import the authentication middleware
 
 const router = express.Router();
 
@@ -34,6 +35,8 @@ const upload = multer({ storage });
  * /files/upload:
  *   post:
  *     summary: Upload a file
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -52,7 +55,7 @@ const upload = multer({ storage });
  *       500:
  *         description: Error processing file upload
  */
-router.post("/upload", upload.single("audio"), async (req, res) => {
+router.post("/upload", authenticateToken, upload.single("audio"), async (req, res) => {
   try {
     logger.info('Processing file upload request');
     if (!req.file) {
@@ -81,6 +84,8 @@ router.post("/upload", upload.single("audio"), async (req, res) => {
  * /files/list:
  *   get:
  *     summary: List all files of a specific type
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: query
  *         name: type
@@ -93,7 +98,7 @@ router.post("/upload", upload.single("audio"), async (req, res) => {
  *       500:
  *         description: Error fetching files
  */
-router.get("/list", async (req, res) => {
+router.get("/list", authenticateToken, async (req, res) => {
   try {
     logger.info('Fetching files');
     const type = req.query.type;
@@ -116,6 +121,8 @@ router.get("/list", async (req, res) => {
  * /files/{id}:
  *   get:
  *     summary: Retrieve a single file
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -131,7 +138,7 @@ router.get("/list", async (req, res) => {
  *       500:
  *         description: Error fetching file
  */
-router.get("/:id", async (req, res) => {
+router.get("/:id", authenticateToken, async (req, res) => {
   try {
     const file = await databaseService.findOne('File', {
       where: { id: req.params.id }
@@ -157,6 +164,8 @@ router.get("/:id", async (req, res) => {
  * /files/{id}:
  *   delete:
  *     summary: Delete a file
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -172,7 +181,7 @@ router.get("/:id", async (req, res) => {
  *       500:
  *         description: Error deleting file
  */
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", authenticateToken, async (req, res) => {
   try {
     const file = await databaseService.findOne('File', {
       where: { id: req.params.id }
@@ -202,6 +211,8 @@ router.delete("/:id", async (req, res) => {
  * /files/info/{id}:
  *   get:
  *     summary: Get information of a specific file
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -217,7 +228,7 @@ router.delete("/:id", async (req, res) => {
  *       500:
  *         description: Error fetching file information
  */
-router.get("/info/:id", async (req, res) => {
+router.get("/info/:id", authenticateToken, async (req, res) => {
   try {
     const file = await databaseService.findOne('File', {
       where: { id: req.params.id }
