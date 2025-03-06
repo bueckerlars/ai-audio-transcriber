@@ -18,6 +18,7 @@ services:
       - POSTGRES_DB=${DB_NAME}
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - JWT_SECRET="alskhjgb9832z5823bn28fhgns90shv892bt89n2q9gbn298n09"
     depends_on:
       - postgres
     restart: always
