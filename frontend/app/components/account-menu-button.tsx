@@ -15,7 +15,7 @@ const AccountMenuButton = (props: {profileImageUrl: string}) => {
             <DropdownMenuContent align="end">
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuItem>Profile</DropdownMenuItem>
-                <DropdownMenuItem>Settigs</DropdownMenuItem>
+                <DropdownMenuItem>Settings</DropdownMenuItem>
                 <DropdownMenuItem>Logout</DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
