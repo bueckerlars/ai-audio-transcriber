@@ -68,9 +68,12 @@ class DatabaseService {
         };
 
         // Define associations
+        this.models.File.belongsTo(this.models.User, { foreignKey: 'userId' });
+        
         this.models.TranscriptionJob.belongsTo(this.models.File, { foreignKey: 'transcript_file_id' });
         this.models.TranscriptionJob.belongsTo(this.models.File, { foreignKey: 'audio_file_id' });
-
+        this.models.TranscriptionJob.belongsTo(this.models.User, { foreignKey: 'userId' });
+        
         try {
             await this.sequelize.authenticate();
             await this.sequelize.sync();

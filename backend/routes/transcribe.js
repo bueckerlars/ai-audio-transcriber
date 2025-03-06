@@ -39,15 +39,17 @@ const logger = new LoggerService('API');
  *       200:
  *         description: Transcription started
  *       404:
- *         description: File not found
+ *         description: File not found or unauthorized
  *       500:
  *         description: Error starting transcription
  */
 router.post("/transcribe/:fileId", authenticateToken, async (req, res) => {
   try {
     logger.info('Starting new transcription job');
-    const { userId } = req.body;
-    const { fileId } = req.params;
+    const userId = req.body.userId; // Changed from req.query.userId to req.body.userId
+    const fileId = req.params.fileId;
+    logger.debug('User ID: ' + userId);
+    logger.debug('File ID: ' + fileId);
 
     // Get file information from database
     const file = await databaseService.findOne('File', {
@@ -137,16 +139,13 @@ router.post("/transcribe/:fileId", authenticateToken, async (req, res) => {
  *     summary: Fetch all transcription jobs
  *     security:
  *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               userId:
- *                 type: string
- *                 description: The ID of the user
+ *     parameters:
+ *       - in: query
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the user
  *     responses:
  *       200:
  *         description: List of transcription jobs
@@ -156,7 +155,7 @@ router.post("/transcribe/:fileId", authenticateToken, async (req, res) => {
 router.get("/transcribe/list", authenticateToken, async (req, res) => {
   try {
     logger.debug('Fetching transcription jobs');
-    const { userId } = req.body;
+    const userId = req.query.userId; // Changed from req.body.userId to req.query.userId
 
     const jobs = await databaseService.findAll('TranscriptionJob', {
       where: { userId: userId },
@@ -183,28 +182,24 @@ router.get("/transcribe/list", authenticateToken, async (req, res) => {
  *         schema:
  *           type: string
  *         description: The ID of the transcription job
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               userId:
- *                 type: string
- *                 description: The ID of the user
+ *       - in: query
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the user
  *     responses:
  *       200:
  *         description: Transcription job status
  *       404:
- *         description: Transcription job not found
+ *         description: Transcription job not found or unauthorized
  *       500:
  *         description: Error fetching job status
  */
 router.get("/transcribe/status/:jobId", authenticateToken, async (req, res) => {
   try {
-    const { userId } = req.body;
-    const { jobId } = req.params;
+    const userId = req.query.userId; // Changed from req.body.userId to req.query.userId
+    const jobId = req.params.jobId;
     const job = await databaseService.findOne('TranscriptionJob', {
       where: { id: jobId, userId: userId },
     });
@@ -248,14 +243,14 @@ router.get("/transcribe/status/:jobId", authenticateToken, async (req, res) => {
  *       200:
  *         description: Job deleted
  *       404:
- *         description: Transcription job not found
+ *         description: Transcription job not found or unauthorized
  *       500:
  *         description: Error deleting job
  */
 router.delete("/transcribe/:jobId", authenticateToken, async (req, res) => {
   try {
-    const { userId } = req.body;
-    const { jobId } = req.params;
+    const userId = req.body.userId; // Changed from req.query.userId to req.body.userId
+    const jobId = req.params.jobId;
     const job = await databaseService.findOne('TranscriptionJob', {
       where: { id: jobId, userId: userId },
     });

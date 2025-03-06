@@ -17,7 +17,8 @@ export const login = async (data: { email: string; password: string }) => {
   const response = await api.post('/auth/login', data);
   const token = response.data.token;
   Cookies.set('authenticationToken', token); // Store token in a cookie
-  Cookies.set("userId", response.data.userId);
+  console.log("response", response);
+  Cookies.set("userId", response.data.user.id);
   return response;
 };
 
@@ -69,22 +70,17 @@ export const uploadFile = (file: File, type: string) => {
 export const getFiles = (type?: string) => {
   const token = Cookies.get('authenticationToken');
   const userId = Cookies.get('userId') || '';
-  const formData = new FormData();
-  formData.append('userId', userId);
-  return api.post('/files/list', formData, {
+  return api.get(`/files/list?userId=${userId}&type=${type || ''}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
-    params: { type },
   });
 };
 
 export const getFileInfoById = (id: string) => {
   const token = Cookies.get('authenticationToken');
   const userId = Cookies.get('userId') || '';
-  const formData = new FormData();
-  formData.append('userId', userId);
-  return api.post(`/files/info/${id}`, formData, {
+  return api.get(`/files/info/${id}?userId=${userId}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -94,9 +90,7 @@ export const getFileInfoById = (id: string) => {
 export const getFileById = (id: string) => {
   const token = Cookies.get('authenticationToken');
   const userId = Cookies.get('userId') || '';
-  const formData = new FormData();
-  formData.append('userId', userId);
-  return api.post(`/files/${id}`, formData, {
+  return api.get(`/files/${id}?userId=${userId}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -119,9 +113,7 @@ export const deleteFile = (id: string) => {
 export const startTranscription = (audio_file_id: string) => {
   const token = Cookies.get('authenticationToken');
   const userId = Cookies.get('userId') || '';
-  const formData = new FormData();
-  formData.append('userId', userId);
-  return api.post(`/transcribe/${audio_file_id}`, formData, {
+  return api.post(`/transcribe/${audio_file_id}`, { userId }, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -131,9 +123,7 @@ export const startTranscription = (audio_file_id: string) => {
 export const getTranscriptionList = () => {
   const token = Cookies.get('authenticationToken');
   const userId = Cookies.get('userId') || '';
-  const formData = new FormData();
-  formData.append('userId', userId);
-  return api.post('/transcribe/list', formData, {
+  return api.get(`/transcribe/list?userId=${userId}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -143,9 +133,7 @@ export const getTranscriptionList = () => {
 export const getTranscriptionStatus = (jobId: string) => {
   const token = Cookies.get('authenticationToken');
   const userId = Cookies.get('userId') || '';
-  const formData = new FormData();
-  formData.append('userId', userId);
-  return api.post(`/transcribe/status/${jobId}`, formData, {
+  return api.get(`/transcribe/status/${jobId}?userId=${userId}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },

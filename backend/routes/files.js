@@ -47,6 +47,12 @@ const upload = multer({ storage });
  *               file:
  *                 type: string
  *                 format: binary
+ *               userId:
+ *                 type: string
+ *                 description: The ID of the user
+ *               type:
+ *                 type: string
+ *                 description: The type of the file
  *     responses:
  *       201:
  *         description: File uploaded successfully
@@ -64,7 +70,7 @@ router.post("/upload", authenticateToken, upload.single("audio"), async (req, re
 
     const fileData = {
       filename: req.file.filename,
-      userId: req.file.userId,
+      userId: req.body.userId,
       originalName: req.file.originalname,
       type: req.query.type || 'upload',
       path: req.file.path,
@@ -89,6 +95,12 @@ router.post("/upload", authenticateToken, upload.single("audio"), async (req, re
  *       - bearerAuth: []
  *     parameters:
  *       - in: query
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the user
+ *       - in: query
  *         name: type
  *         schema:
  *           type: string
@@ -102,9 +114,10 @@ router.post("/upload", authenticateToken, upload.single("audio"), async (req, re
 router.get("/list", authenticateToken, async (req, res) => {
   try {
     logger.info('Fetching files');
-    const userId = req.query.userId;
+    const userId = req.query.userId; // Ensure userId is passed as a query parameter
+    logger.debug('UserId:', userId);
     if (!userId) {
-      res.status(500).json({ error: "UserId is required"})
+      return res.status(400).json({ error: "UserId is required" });
     }
 
     const type = req.query.type;
@@ -135,6 +148,12 @@ router.get("/list", authenticateToken, async (req, res) => {
  *         schema:
  *           type: string
  *         description: The ID of the file to retrieve
+ *       - in: query
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the user
  *     responses:
  *       200:
  *         description: File retrieved successfully
@@ -145,8 +164,9 @@ router.get("/list", authenticateToken, async (req, res) => {
  */
 router.get("/:id", authenticateToken, async (req, res) => {
   try {
+    const userId = req.query.userId; // Ensure userId is passed as a query parameter
     const file = await databaseService.findOne('File', {
-      where: { id: req.params.id, userId: req.params.userId }
+      where: { id: req.params.id, userId: userId }
     });
 
     if (!file) {
@@ -154,7 +174,7 @@ router.get("/:id", authenticateToken, async (req, res) => {
     }
 
     if (!fs.existsSync(file.path)) {
-      return res.status(404).json({ error: "File does not exists" });
+      return res.status(404).json({ error: "File does not exist" });
     }
 
     res.sendFile(file.path);
@@ -178,6 +198,12 @@ router.get("/:id", authenticateToken, async (req, res) => {
  *         schema:
  *           type: string
  *         description: The ID of the file to delete
+ *       - in: query
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the user
  *     responses:
  *       200:
  *         description: File deleted successfully
@@ -189,7 +215,7 @@ router.get("/:id", authenticateToken, async (req, res) => {
 router.delete("/:id", authenticateToken, async (req, res) => {
   try {
     const file = await databaseService.findOne('File', {
-      where: { id: req.params.id, userId: req.params.userId }
+      where: { id: req.params.id, userId: req.query.userId }
     });
 
     if (!file) {
@@ -225,6 +251,12 @@ router.delete("/:id", authenticateToken, async (req, res) => {
  *         schema:
  *           type: string
  *         description: The ID of the file to get information
+ *       - in: query
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the user
  *     responses:
  *       200:
  *         description: File information retrieved successfully
@@ -235,8 +267,10 @@ router.delete("/:id", authenticateToken, async (req, res) => {
  */
 router.get("/info/:id", authenticateToken, async (req, res) => {
   try {
+    const userId = req.query.userId; // Ensure userId is passed as a query parameter
+
     const file = await databaseService.findOne('File', {
-      where: { id: req.params.id, userId: req.params.userId }
+      where: { id: req.params.id, userId: userId }
     });
 
     if (!file) {

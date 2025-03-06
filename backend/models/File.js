@@ -11,7 +11,7 @@ class File {
       userId: {
         type: DataTypes.INTEGER,
         references: {
-          model: "User",
+          model: "Users",
           key: "id",
         }
       },
@@ -43,4 +43,4 @@ class File {
   }
 }
 
-module.exports = File; 
+module.exports = File;
