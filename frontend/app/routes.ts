@@ -1,5 +1,4 @@
 import { type RouteConfig, route, index, layout } from "@react-router/dev/routes";
-import Cookies from 'js-cookie'; 
 
 export default [
     layout("./routes/layout.tsx", [

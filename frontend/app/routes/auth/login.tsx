@@ -1,27 +1,18 @@
-import { Link, useNavigate } from "react-router";
-import { useState } from "react";
-import { login } from "~/api";
+import { Link } from "react-router";
 import { Button } from "~/components/ui/button";
 import { Card, CardDescription, CardFooter, CardHeader } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
+import { useLogin } from "~/hooks/useLogin";
 
 export default function Login() {
-  const navigate = useNavigate();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const response = await login({ email, password });
-      // Save token to localStorage or context
-      localStorage.setItem("token", response.data.token);
-      navigate("/");
-    } catch (err) {
-      setError("Invalid email or password");
-    }
-  };
+  const {
+    email,
+    setEmail,
+    password,
+    setPassword,
+    error,
+    handleSubmit,
+  } = useLogin();
 
   return (
     <div className="flex justify-center items-center h-screen">

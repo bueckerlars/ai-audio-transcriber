@@ -1,31 +1,22 @@
-import { Link, useNavigate } from "react-router";
-import { useState } from "react";
-import { register } from "~/api";
+import { Link } from "react-router";
 import { Button } from "~/components/ui/button";
 import { Card, CardHeader, CardFooter, CardDescription } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
+import { useRegister } from "~/hooks/useRegister";
 
 export default function Register() {
-  const navigate = useNavigate();
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
-    try {
-      await register({ username, email, password });
-      navigate("/login");
-    } catch (err) {
-      setError("Registration failed");
-    }
-  };
+  const {
+    username,
+    setUsername,
+    email,
+    setEmail,
+    password,
+    setPassword,
+    confirmPassword,
+    setConfirmPassword,
+    error,
+    handleSubmit,
+  } = useRegister();
 
   return (
     <div className="flex justify-center items-center h-screen">

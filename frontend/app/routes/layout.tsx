@@ -1,7 +1,4 @@
-import Cookies from "js-cookie";
-import { useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
-import { getUserInfo, logout } from "~/api";
 import AccountMenuButton from "~/components/account-menu-button";
 
 export default function AppLayout() {
