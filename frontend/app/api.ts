@@ -13,12 +13,9 @@ export const register = (data: { username: string; email: string; password: stri
   return api.post('/auth/register', data);
 };
 
-export const login = async (data: { email: string; password: string }) => {
+export const login = async (email: string, password: string) => {
+  const data = { email, password };
   const response = await api.post('/auth/login', data);
-  const token = response.data.token;
-  Cookies.set('authenticationToken', token); // Store token in a cookie
-  console.log("response", response);
-  Cookies.set("userId", response.data.user.id);
   return response;
 };
 
@@ -35,12 +32,7 @@ export const logout = () => {
 };
 
 export const getUserInfo = (): Promise<AxiosResponse<any, any>> => {
-  const token = Cookies.get('authenticationToken');
-  return api.get('/auth/me', {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  return api.get('/auth/me', {});
 };
 
 export const changePassword = (data: { currentPassword: string; newPassword: string }) => {

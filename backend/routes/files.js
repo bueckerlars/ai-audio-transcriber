@@ -76,7 +76,8 @@ router.post("/upload", authenticateToken, upload.single("audio"), async (req, re
       type: req.query.type || 'upload',
       path: req.file.path,
       size: req.file.size,
-      mimeType: req.file.mimetype
+      mimeType: req.file.mimetype,
+      createdAt: new Date() // Add creation timestamp
     };
 
     const file = await databaseService.insert('File', fileData);

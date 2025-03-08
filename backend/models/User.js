@@ -20,7 +20,19 @@ class User {
             password: {
                 type: DataTypes.STRING,
                 allowNull: false
-            }
+            },
+            role: {
+                type: DataTypes.STRING,
+                allowNull: false
+            },
+            createdAt: {
+                type: DataTypes.DATE,
+                allowNull: false
+            },
+            profilePictureUrl: {
+                type: DataTypes.STRING,
+                allowNull: true
+            },
         }, {
             tableName: 'Users'
         });

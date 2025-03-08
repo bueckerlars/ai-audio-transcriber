@@ -55,7 +55,9 @@ router.post('/register', async (req, res) => {
         const user = await User.create({
             username,
             email,
-            password: hashedPassword
+            password: hashedPassword,
+            role: 'user', // Add default role
+            createdAt: new Date() // Add creation timestamp
         });
 
         res.status(201).json({ 
@@ -117,7 +119,7 @@ router.post('/login', async (req, res) => {
         const token = jwt.sign(
             { userId: user.id, email: user.email },
             process.env.JWT_SECRET,
-            { expiresIn: '24h' }
+            { expiresIn: '15min' }
         );
 
         res.json({ 
