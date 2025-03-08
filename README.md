@@ -9,7 +9,6 @@ The project is built using modern web technologies:
 ### **Frontend**
 - **React** – User Interface  
 - **Axios** – API Requests  
-- **Nginx** – Serves the frontend in production  
 
 ### **Backend**
 - **Node.js (Express.js)** – API & File Management  
@@ -57,7 +56,7 @@ Frontend is now running on **http://localhost:3000**
 docker-compose up --build -d
 ```
 This starts:  
-✅ **Backend** → `http://localhost:5000`  
+✅ **Backend** → `http://localhost:5066`  
 ✅ **Frontend** → `http://localhost:3000`  
 
 #### **2. Stopping Containers**
@@ -75,48 +74,24 @@ docker-compose logs -f frontend
 
 ## 📌 API Endpoints
 
-### **1️⃣ Upload an Audio File**
-```
-POST /api/upload
-```
-- **Body:** `multipart/form-data` (Key: `audio`)
-- **Response:**
-  ```json
-  { "message": "Transcription started", "transcriptPath": "/transcriptions/audio1.txt" }
-  ```
+The API documentation is available through SwaggerUI. You can access it by navigating to the following URL once the backend is running:
 
-### **2️⃣ Get Uploaded Files**
 ```
-GET /api/uploads
+http://localhost:5066/api-docs
 ```
-- **Response:**
-  ```json
-  { "uploads": ["audio1.mp3", "audio2.wav"] }
-  ```
 
-### **3️⃣ Get Transcriptions**
-```
-GET /api/transcriptions
-```
-- **Response:**
-  ```json
-  { "transcriptions": ["audio1.txt", "audio2.txt"] }
-  ```
-
-### **4️⃣ Download a File**
-```
-GET /api/uploads/:filename
-GET /api/transcriptions/:filename
-```
+Refer to the SwaggerUI documentation for detailed information on request parameters and responses.
 
 ---
 
 ## 📌 Features & To-Do
 ✅ Upload and transcribe audio files  
 ✅ Download transcriptions  
+✅ Database for file storage  
 🔄 **Upcoming Features:**  
 - User authentication & project management  
-- Database for file storage  
+- Support for external transcription agents
+- Support for selectable models from the frontend
 - Support for multiple languages  
 
 ---
