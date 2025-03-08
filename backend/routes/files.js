@@ -35,6 +35,7 @@ const upload = multer({ storage });
  * /files/upload:
  *   post:
  *     summary: Upload a file
+ *     tags: ['Files']
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -91,6 +92,7 @@ router.post("/upload", authenticateToken, upload.single("audio"), async (req, re
  * /files/list:
  *   get:
  *     summary: List all files of a specific type
+ *     tags: ['Files']
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -139,6 +141,7 @@ router.get("/list", authenticateToken, async (req, res) => {
  * /files/{id}:
  *   get:
  *     summary: Retrieve a single file
+ *     tags: ['Files']
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -189,6 +192,7 @@ router.get("/:id", authenticateToken, async (req, res) => {
  * /files/{id}:
  *   delete:
  *     summary: Delete a file
+ *     tags: ['Files']
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -242,6 +246,7 @@ router.delete("/:id", authenticateToken, async (req, res) => {
  * /files/info/{id}:
  *   get:
  *     summary: Get information of a specific file
+ *     tags: ['Files']
  *     security:
  *       - bearerAuth: []
  *     parameters:

@@ -18,6 +18,7 @@ const logger = new LoggerService('API');
  * /transcribe/{fileId}:
  *   post:
  *     summary: Start transcription for an existing file
+ *     tags: ['Transcribe']
  *     parameters:
  *       - in: path
  *         name: fileId
@@ -137,6 +138,7 @@ router.post("/transcribe/:fileId", authenticateToken, async (req, res) => {
  * /transcribe/list:
  *   get:
  *     summary: Fetch all transcription jobs
+ *     tags: ['Transcribe']
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -175,6 +177,7 @@ router.get("/transcribe/list", authenticateToken, async (req, res) => {
  * /transcribe/status/{jobId}:
  *   get:
  *     summary: Query transcription status
+ *     tags: ['Transcribe']
  *     parameters:
  *       - in: path
  *         name: jobId
@@ -222,6 +225,7 @@ router.get("/transcribe/status/:jobId", authenticateToken, async (req, res) => {
  * /transcribe/{jobId}:
  *   delete:
  *     summary: Delete a transcription job
+ *     tags: ['Transcribe']
  *     parameters:
  *       - in: path
  *         name: jobId

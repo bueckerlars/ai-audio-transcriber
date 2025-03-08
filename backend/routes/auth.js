@@ -12,6 +12,7 @@ const router = express.Router();
  * /auth/register:
  *   post:
  *     summary: Register a new user
+ *     tags: [Authentication]
  *     requestBody:
  *       required: true
  *       content:
@@ -72,6 +73,7 @@ router.post('/register', async (req, res) => {
  * /auth/login:
  *   post:
  *     summary: Login a user
+ *     tags: [Authentication]
  *     requestBody:
  *       required: true
  *       content:
@@ -137,6 +139,7 @@ router.post('/login', async (req, res) => {
  * /auth/me:
  *   get:
  *     summary: Get user info
+ *     tags: [Authentication]
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -171,6 +174,7 @@ router.get('/me', authenticateToken, async (req, res) => {
  * /auth/change-password:
  *   post:
  *     summary: Change user password
+ *     tags: [Authentication]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -230,6 +234,7 @@ router.post('/change-password', authenticateToken, async (req, res) => {
  * /auth/logout:
  *   post:
  *     summary: Logout a user
+ *     tags: [Authentication]
  *     security:
  *       - bearerAuth: []
  *     responses:
